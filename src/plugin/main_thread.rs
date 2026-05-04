@@ -1,0 +1,107 @@
+use crate::plugin::params::*;
+use crate::plugin::shared::ReverbShared;
+use clack_extensions::{
+    audio_ports::*,
+    params::*,
+    state::{PluginState, PluginStateImpl},
+};
+use clack_plugin::prelude::*;
+use clack_plugin::stream::{InputStream, OutputStream};
+
+pub struct ReverbMainThread<'a> {
+    pub shared: &'a ReverbShared,
+}
+
+impl<'a> PluginMainThread<'a, ReverbShared> for ReverbMainThread<'a> {}
+
+impl PluginStateImpl for ReverbMainThread<'_> {
+    fn save(&mut self, output: &mut OutputStream) -> Result<(), PluginError> {
+        todo!()
+    }
+    fn load(&mut self, input: &mut InputStream) -> Result<(), PluginError> {
+        todo!()
+    }
+}
+
+impl PluginAudioPortsImpl for ReverbMainThread<'_> {
+    fn count(&mut self, _is_input: bool) -> u32 {
+        1
+    }
+
+    fn get(&mut self, index: u32, _is_input: bool, writer: &mut AudioPortInfoWriter) {
+        if index == 0 {
+            writer.set(&AudioPortInfo {
+                id: ClapId::new(0),
+                name: b"main",
+                channel_count: 2,
+                flags: AudioPortFlags::IS_MAIN,
+                port_type: Some(AudioPortType::STEREO),
+                in_place_pair: None,
+            });
+        }
+    }
+}
+
+impl PluginMainThreadParams for ReverbMainThread<'_> {
+    fn count(&mut self) -> u32 {
+        2
+    }
+
+    fn get_info(&mut self, param_index: u32, info: &mut ParamInfoWriter) {
+        if param_index == 0 {
+            info.set(&unit_param_info(
+                PARAM_FEEDBACK_ID,
+                b"Feedback",
+                DEFAULT_FEEDBACK,
+            ));
+        } else if param_index == 1 {
+            info.set(&unit_param_info(
+                PARAM_CUT_OFF_ID,
+                b"Cut off",
+                DEFAULT_CUT_OFF,
+            ));
+        } else if param_index == 2 {
+            info.set(&unit_param_info(PARAM_MIX_ID, b"Mix", DEFAULT_MIX));
+        }
+    }
+
+    fn get_value(&mut self, param_id: ClapId) -> Option<f64> {
+        todo!()
+    }
+
+    fn value_to_text(
+        &mut self,
+        param_id: ClapId,
+        value: f64,
+        writer: &mut ParamDisplayWriter,
+    ) -> core::fmt::Result {
+        todo!()
+    }
+
+    fn text_to_value(&mut self, param_id: ClapId, text: &std::ffi::CStr) -> Option<f64> {
+        todo!()
+    }
+
+    fn flush(
+        &mut self,
+        input_parameter_changes: &InputEvents,
+        _output_parameter_changes: &mut OutputEvents,
+    ) {
+        for event in input_parameter_changes {
+            self.shared.params.handle_event(event)
+        }
+    }
+}
+
+fn unit_param_info(id: ClapId, name: &[u8], init: f32) -> ParamInfo {
+    ParamInfo {
+        id,
+        flags: ParamInfoFlags::IS_AUTOMATABLE,
+        cookie: Default::default(),
+        name,
+        module: b"",
+        min_value: 0.0,
+        max_value: 1.0,
+        default_value: init as f64,
+    }
+}
