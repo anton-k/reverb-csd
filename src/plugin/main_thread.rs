@@ -7,6 +7,8 @@ use clack_extensions::{
 };
 use clack_plugin::prelude::*;
 use clack_plugin::stream::{InputStream, OutputStream};
+use std::fmt::Write as _;
+use std::io::{Read, Write as _};
 
 pub struct ReverbMainThread<'a> {
     pub shared: &'a ReverbShared,
@@ -16,10 +18,17 @@ impl<'a> PluginMainThread<'a, ReverbShared> for ReverbMainThread<'a> {}
 
 impl PluginStateImpl for ReverbMainThread<'_> {
     fn save(&mut self, output: &mut OutputStream) -> Result<(), PluginError> {
-        todo!()
+        output.write_all(&self.shared.params.serialize())?;
+        Ok(())
     }
     fn load(&mut self, input: &mut InputStream) -> Result<(), PluginError> {
-        todo!()
+        let mut buf: Vec<u8> = Vec::new();
+        input.read_exact(&mut buf)?;
+        let params = ReverbParams::deserialize(&buf);
+        self.shared.params.set_feedback(params.get_feedback());
+        self.shared.params.set_cut_off(params.get_cut_off());
+        self.shared.params.set_mix(params.get_mix());
+        Ok(())
     }
 }
 
@@ -44,7 +53,7 @@ impl PluginAudioPortsImpl for ReverbMainThread<'_> {
 
 impl PluginMainThreadParams for ReverbMainThread<'_> {
     fn count(&mut self) -> u32 {
-        2
+        3
     }
 
     fn get_info(&mut self, param_index: u32, info: &mut ParamInfoWriter) {
@@ -66,20 +75,33 @@ impl PluginMainThreadParams for ReverbMainThread<'_> {
     }
 
     fn get_value(&mut self, param_id: ClapId) -> Option<f64> {
-        todo!()
+        if param_id == PARAM_FEEDBACK_ID {
+            Some(self.shared.params.get_feedback() as f64)
+        } else if param_id == PARAM_CUT_OFF_ID {
+            Some(self.shared.params.get_cut_off() as f64)
+        } else if param_id == PARAM_MIX_ID {
+            Some(self.shared.params.get_mix() as f64)
+        } else {
+            None
+        }
     }
 
     fn value_to_text(
         &mut self,
-        param_id: ClapId,
+        _param_id: ClapId,
         value: f64,
         writer: &mut ParamDisplayWriter,
     ) -> core::fmt::Result {
-        todo!()
+        write!(writer, "{0:.2}", value)
     }
 
     fn text_to_value(&mut self, param_id: ClapId, text: &std::ffi::CStr) -> Option<f64> {
-        todo!()
+        if is_valid_param(param_id) {
+            let text = text.to_str().ok()?;
+            text.trim().parse().ok()
+        } else {
+            None
+        }
     }
 
     fn flush(
@@ -91,6 +113,10 @@ impl PluginMainThreadParams for ReverbMainThread<'_> {
             self.shared.params.handle_event(event)
         }
     }
+}
+
+fn is_valid_param(param_id: ClapId) -> bool {
+    param_id >= PARAM_FEEDBACK_ID && param_id <= PARAM_MIX_ID
 }
 
 fn unit_param_info(id: ClapId, name: &[u8], init: f32) -> ParamInfo {

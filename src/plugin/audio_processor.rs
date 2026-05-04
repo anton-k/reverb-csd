@@ -1,5 +1,6 @@
 use crate::plugin::main_thread::ReverbMainThread;
 use crate::plugin::shared::ReverbShared;
+use clack_extensions::params::PluginAudioProcessorParams;
 use clack_plugin::prelude::*;
 
 pub struct ReverbAudioProcessor<'a> {
@@ -22,6 +23,16 @@ impl<'a> PluginAudioProcessor<'a, ReverbShared, ReverbMainThread<'a>> for Reverb
         audio: Audio,
         events: Events,
     ) -> Result<ProcessStatus, PluginError> {
+        todo!()
+    }
+}
+
+impl<'a> PluginAudioProcessorParams for ReverbAudioProcessor<'a> {
+    fn flush(
+        &mut self,
+        input_parameter_changes: &InputEvents,
+        output_parameter_changes: &mut OutputEvents,
+    ) {
         todo!()
     }
 }

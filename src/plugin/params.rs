@@ -9,6 +9,7 @@ pub static DEFAULT_MIX: f32 = 1.0;
 pub const PARAM_FEEDBACK_ID: ClapId = ClapId::new(1);
 pub const PARAM_CUT_OFF_ID: ClapId = ClapId::new(2);
 pub const PARAM_MIX_ID: ClapId = ClapId::new(3);
+use bincode_next::enc::Encode;
 
 pub struct ReverbParams {
     feedback: AtomicF32,
@@ -18,8 +19,18 @@ pub struct ReverbParams {
 
 impl ReverbParams {
     #[inline]
-    pub fn get_volume(&self) -> f32 {
+    pub fn get_feedback(&self) -> f32 {
         self.feedback.load(Ordering::SeqCst)
+    }
+
+    #[inline]
+    pub fn get_cut_off(&self) -> f32 {
+        self.cut_off.load(Ordering::SeqCst)
+    }
+
+    #[inline]
+    pub fn get_mix(&self) -> f32 {
+        self.mix.load(Ordering::SeqCst)
     }
 
     #[inline]
@@ -48,6 +59,29 @@ impl ReverbParams {
             } else if event.param_id() == PARAM_MIX_ID {
                 self.set_mix(event.value() as f32)
             }
+        }
+    }
+
+    pub fn serialize(&self) -> Vec<u8> {
+        let mut res = Vec::new();
+        let data = vec![self.get_feedback(), self.get_cut_off(), self.get_feedback()];
+        bincode_next::encode_into_slice(data, &mut res, bincode_next::config::standard()).unwrap();
+        res
+    }
+
+    pub fn deserialize(src: &[u8]) -> Self {
+        let (data, _) = bincode_next::decode_from_slice::<
+            Vec<f32>,
+            bincode_next::config::Configuration,
+        >(src, bincode_next::config::standard())
+        .unwrap();
+        let feedback = AtomicF32::from(data[0]);
+        let cut_off = AtomicF32::from(data[1]);
+        let mix = AtomicF32::from(data[2]);
+        ReverbParams {
+            feedback,
+            cut_off,
+            mix,
         }
     }
 }

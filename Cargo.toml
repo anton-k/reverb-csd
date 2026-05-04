@@ -1,9 +1,43 @@
+[workspace]
+resolver = "3"
+members = [".", "bundler"]
+
 [package]
 name = "reverb-csd"
 version = "0.1.0"
 edition = "2024"
 
+include = [
+    "src/**",
+    "build.rs",
+    "./README.md",
+
+    # Include external dependency licenses, just in case
+    "LICENSE*",
+
+    "external/clap/include/**",
+    "external/clap-wrapper/include/**",
+    "external/clap-wrapper/libs/**",
+    "external/clap-wrapper/src/**",
+    "external/filesystem/include/**",
+
+    "external/AudioUnitSDK/include/**",
+    "external/AudioUnitSDK/src/**", 
+
+    "external/vst3sdk/pluginterfaces/**",
+    "external/vst3sdk/public.sdk/source/**",
+    "external/vst3sdk/base/**",
+]
+
+[build-dependencies]
+cc = "1.2.52"
+
+[lib]
+crate-type = ["cdylib"]
+
 [dependencies]
+bincode-next = "2.1.0"
 clack-extensions = { git = "https://github.com/prokopyl/clack.git", version = "0.1.0", features = ["clack-plugin", "audio-ports", "gui", "note-ports", "params", "raw-window-handle_06", "state"] }
 clack-plugin = { git = "https://github.com/prokopyl/clack.git" }
-clap-wrapper = { git = "https://github.com/blepfx/clap-wrapper-rs" }
+clap-wrapper = { git = "https://github.com/blepfx/clap-wrapper-rs", features = ["vst3", "parallel"] }
+
