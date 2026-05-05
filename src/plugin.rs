@@ -1,7 +1,8 @@
-use clack_extensions::{audio_ports::*, params::PluginParams, state::PluginState};
+use clack_extensions::{audio_ports::*, gui::PluginGui, params::PluginParams, state::PluginState};
 use clack_plugin::plugin::features;
 use clack_plugin::prelude::*;
 pub mod audio_processor;
+pub mod gui;
 pub mod main_thread;
 pub mod params;
 pub mod shared;
@@ -23,6 +24,7 @@ impl Plugin for Reverb {
         builder
             .register::<PluginAudioPorts>()
             .register::<PluginParams>()
+            .register::<PluginGui>()
             .register::<PluginState>();
     }
 }
@@ -42,6 +44,6 @@ impl DefaultPluginFactory for Reverb {
         _host: HostMainThreadHandle<'a>,
         shared: &'a Self::Shared<'a>,
     ) -> Result<Self::MainThread<'a>, PluginError> {
-        Ok(Self::MainThread { shared })
+        Ok(Self::MainThread { shared, gui: None })
     }
 }

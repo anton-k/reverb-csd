@@ -20,3 +20,6 @@ Plugins are built with clack framework and clap-wrapper-rs library.
 * clack example:
   https://github.com/Kwarf/crabhowler
 
+* csound audio processing for VST example in cpp + juce:
+  https://github.com/gogins/csound-vst3/blob/main/CsoundVST3/Source/PluginProcessor.cpp#L432b
+

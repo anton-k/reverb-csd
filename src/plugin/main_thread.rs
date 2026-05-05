@@ -1,10 +1,8 @@
+use crate::plugin::gui::ReverbGui;
 use crate::plugin::params::*;
 use crate::plugin::shared::ReverbShared;
-use clack_extensions::{
-    audio_ports::*,
-    params::*,
-    state::{PluginState, PluginStateImpl},
-};
+use clack_extensions::gui::{GuiApiType, Window};
+use clack_extensions::{audio_ports::*, gui::{PluginGuiImpl, GuiSize, GuiConfiguration}, params::*, state::PluginStateImpl};
 use clack_plugin::prelude::*;
 use clack_plugin::stream::{InputStream, OutputStream};
 use std::fmt::Write as _;
@@ -12,6 +10,7 @@ use std::io::{Read, Write as _};
 
 pub struct ReverbMainThread<'a> {
     pub shared: &'a ReverbShared,
+    pub gui: Option<ReverbGui>,
 }
 
 impl<'a> PluginMainThread<'a, ReverbShared> for ReverbMainThread<'a> {}
@@ -131,3 +130,81 @@ fn unit_param_info(id: ClapId, name: &[u8], init: f32) -> ParamInfo {
         default_value: init as f64,
     }
 }
+
+impl<'a> PluginGuiImpl for ReverbMainThread<'a> {
+    fn is_api_supported(&mut self, configuration: GuiConfiguration) -> bool {
+        configuration.api_type
+            == GuiApiType::default_for_current_platform().expect("Unsupported platform")
+            && !configuration.is_floating
+    }
+
+    fn get_preferred_api(&mut self) -> Option<GuiConfiguration<'_>> {
+        Some(GuiConfiguration {
+            api_type: GuiApiType::default_for_current_platform().expect("Unsupported platform"),
+            is_floating: false,
+        })
+    }
+
+    fn create(&mut self, configuration: GuiConfiguration) -> Result<(), PluginError> {
+        if configuration.is_floating {
+            return Err(PluginError::Message(
+                "Invalid GUI configuration: this plugin does not support floating mode",
+            ));
+        }
+
+        let supported_type =
+            GuiApiType::default_for_current_platform().expect("Unsupported platform");
+
+        if configuration.api_type != supported_type {
+            return Err(PluginError::Message(
+                "Invalid GUI configuration: unsupported API type",
+            ));
+        }
+
+        Ok(())
+    }
+
+    fn destroy(&mut self) {
+        let _ = self.gui.take();
+    }
+
+    fn set_scale(&mut self, _scale: f64) -> Result<(), PluginError> {
+        Ok(())
+    }
+
+    fn get_size(&mut self) -> Option<GuiSize> {
+        Some(GuiSize {
+            width: 400,
+            height: 200,
+        })
+    }
+
+    fn set_size(&mut self, _size: GuiSize) -> Result<(), PluginError> {
+        Ok(())
+    }
+
+    fn set_parent(&mut self, window: Window) -> Result<(), PluginError> {
+        self.gui = Some(ReverbGui::new(window, self.shared));
+        Ok(())
+    }
+
+    fn set_transient(&mut self, _window: Window) -> Result<(), PluginError> {
+        Ok(())
+    }
+
+    fn show(&mut self) -> Result<(), PluginError> {
+        if let Some(gui) = &self.gui {
+            gui.request_repaint()
+        }
+        Ok(())
+    }
+
+    fn hide(&mut self) -> Result<(), PluginError> {
+        if let Some(gui) = &self.gui {
+            gui.request_repaint()
+        }
+
+        Ok(())
+    }
+}
+
