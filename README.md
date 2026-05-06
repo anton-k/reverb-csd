@@ -58,3 +58,16 @@ Rust fast SPSC queues:
 * fq - https://crates.io/crates/fq
 * nexus::queue - https://github.com/Abso1ut3Zer0/nexus
 * spsc - https://github.com/1rishuraj/low-latency-rust/tree/main/spsc
+
+CPP queues:
+
+* and doc: https://wryzxec.github.io/lockfree_spsc.html
+  https://github.com/wryzxec/PikaQ
+
+* cpp vs rust comparison
+  https://nordvarg.com/blog/low-latency-cpp-rust
+
+* SPSC tutorials:
+
+  https://www.youtube.com/watch?v=K3P_Lmq6pw0&t=38s
+  https://www.youtube.com/watch?v=8uAW5FQtcvE&t=2821s
