@@ -10,6 +10,7 @@ pub mod shared;
 pub struct Reverb;
 use audio_processor::ReverbAudioProcessor;
 use main_thread::ReverbMainThread;
+use params::ReverbParamsLocal;
 use shared::ReverbShared;
 
 impl Plugin for Reverb {
@@ -44,6 +45,10 @@ impl DefaultPluginFactory for Reverb {
         _host: HostMainThreadHandle<'a>,
         shared: &'a Self::Shared<'a>,
     ) -> Result<Self::MainThread<'a>, PluginError> {
-        Ok(Self::MainThread { shared, gui: None })
+        Ok(Self::MainThread {
+            params: ReverbParamsLocal::new(&shared.params),
+            shared,
+            gui: None,
+        })
     }
 }

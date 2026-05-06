@@ -12,6 +12,16 @@ just run
 It builds shared library and generates bundled plugins for vst3 and clap.
 Plugins are built with clack framework and clap-wrapper-rs library.
 
+### TODO
+
+* make local version of params (see clack example)
+
+* implement csound update of the params
+
+* implement csound audio to VST connection
+
+* fine-tune the UI
+
 ### Examples:
 
 * clack with gui, official clack gain FX example:

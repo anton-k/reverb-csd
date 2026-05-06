@@ -10,11 +10,11 @@ pub struct ReverbAudioProcessor<'a> {
 impl<'a> PluginAudioProcessor<'a, ReverbShared, ReverbMainThread<'a>> for ReverbAudioProcessor<'a> {
     fn activate(
         host: HostAudioProcessorHandle<'a>,
-        main_thread: &mut ReverbMainThread<'a>,
+        _main_thread: &mut ReverbMainThread<'a>,
         shared: &'a ReverbShared,
-        audio_config: PluginAudioConfiguration,
+        _audio_config: PluginAudioConfiguration,
     ) -> Result<Self, PluginError> {
-        todo!()
+        Ok(Self { shared })
     }
 
     fn process(
@@ -23,7 +23,7 @@ impl<'a> PluginAudioProcessor<'a, ReverbShared, ReverbMainThread<'a>> for Reverb
         audio: Audio,
         events: Events,
     ) -> Result<ProcessStatus, PluginError> {
-        todo!()
+        Ok(ProcessStatus::ContinueIfNotQuiet)
     }
 }
 
@@ -33,6 +33,8 @@ impl<'a> PluginAudioProcessorParams for ReverbAudioProcessor<'a> {
         input_parameter_changes: &InputEvents,
         output_parameter_changes: &mut OutputEvents,
     ) {
-        todo!()
+        for event in input_parameter_changes {
+            //            self.params.handle_event(event)
+        }
     }
 }

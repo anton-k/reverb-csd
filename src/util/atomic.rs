@@ -15,6 +15,12 @@ impl AtomicF32 {
     pub fn load(&self, order: Ordering) -> f32 {
         f32_from_u32_bytes(self.0.load(order))
     }
+
+    /// Stores the given `value`, and returns the previously stored one.
+    #[inline]
+    pub fn swap(&self, value: f32) -> f32 {
+        f32::from_bits(self.0.swap(value.to_bits(), Ordering::Relaxed))
+    }
 }
 
 /// Creates a new atomic `f32`.
