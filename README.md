@@ -14,13 +14,21 @@ Plugins are built with clack framework and clap-wrapper-rs library.
 
 ### TODO
 
-* make local version of params (see clack example)
-
-* implement csound update of the params
-
 * implement csound audio to VST connection
 
 * fine-tune the UI
+
+* make VST build work again (somehow clap-wrapper does not work with Csound.)
+  I guess it happens because of dynamic linking. Post an issue and try to investigate
+  static linking for Csound.
+  
+#### Static linking for csound (cure VST3 build)
+
+We can produce static linking (google/deepseek around).
+But there is a problem that to be completley static it has to include recursive sub dependencies.
+There is a script to do it for Mac on Csound repo. I wonder if it works or can be adapted for
+linux and windows.
+
 
 ### Examples:
 
@@ -36,3 +44,17 @@ Plugins are built with clack framework and clap-wrapper-rs library.
 * csound audio processing for VST example in cpp + juce:
   https://github.com/gogins/csound-vst3/blob/main/CsoundVST3/Source/PluginProcessor.cpp#L432b
 
+* fast single producer single consumer queue
+https://github.com/wryzxec/PikaQ
+
+* ringbuffer - for education
+https://dev.to/codeapprentice/low-latency-rust-building-a-cache-friendly-lock-free-spsc-ring-buffer-in-rust-ddm
+
+
+Rust fast SPSC queues:
+
+* rtrb - https://github.com/mgeier/rtrb
+* ringbuffer - https://github.com/aodr3w/llt-rs/tree/main/src/ring_buffer
+* fq - https://crates.io/crates/fq
+* nexus::queue - https://github.com/Abso1ut3Zer0/nexus
+* spsc - https://github.com/1rishuraj/low-latency-rust/tree/main/spsc

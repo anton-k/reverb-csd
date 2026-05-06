@@ -1,6 +1,7 @@
 use clack_extensions::{audio_ports::*, gui::PluginGui, params::PluginParams, state::PluginState};
 use clack_plugin::plugin::features;
 use clack_plugin::prelude::*;
+pub mod audio;
 pub mod audio_processor;
 pub mod gui;
 pub mod main_thread;

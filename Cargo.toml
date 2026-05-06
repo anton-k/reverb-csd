@@ -11,6 +11,7 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [dependencies]
+csound = { path =  "/home/anton/dev/tools/csound-rs" }
 bincode-next = "2.1.0"
 clack-extensions = { git = "https://github.com/prokopyl/clack.git", version = "0.1.0", features = ["clack-plugin", "audio-ports", "gui", "note-ports", "params", "raw-window-handle_05", "state"] }
 clack-plugin = { git = "https://github.com/prokopyl/clack.git" }
@@ -18,3 +19,7 @@ clap-wrapper = { git = "https://github.com/blepfx/clap-wrapper-rs", features = [
 baseview = { git = "https://github.com/RustAudio/baseview.git", rev = "237d323c729f3aa99476ba3efa50129c5e86cad3", version = "0.1.0" }
 egui-baseview = { git = "https://codeberg.org/BillyDM/egui-baseview.git", branch = "egui_33" }
 egui_knob = "=0.3.10"
+crossbeam-channel = "0.5.15"
+# tokio-bichannel = "1.0.2"
+# tokio = { version = "1.52.1", features = ["full", "sync"] }
+

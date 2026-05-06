@@ -119,7 +119,6 @@ impl ReverbGui {
                     let knob_mix = get_knob(&mut mix_value);
                     let mix_ui = ui.put(rect_mix, knob_mix);
                     if mix_ui.changed() {
-                        println!("Value: {:?}", mix_value);
                         state.local_params.set_mix(mix_value);
                         state.local_params.push_mix_updates(&state.shared_params);
                     }

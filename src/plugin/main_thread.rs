@@ -128,7 +128,7 @@ impl PluginMainThreadParams for ReverbMainThread<'_> {
         _output_parameter_changes: &mut OutputEvents,
     ) {
         for event in input_parameter_changes {
-            self.params.handle_event(event)
+            self.params.handle_event(event);
         }
     }
 }
