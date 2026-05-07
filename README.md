@@ -30,9 +30,6 @@ Plugins are built with clack framework and clap-wrapper-rs library.
 * clack with gui, official clack gain FX example:
   https://github.com/prokopyl/clack/tree/main/plugin/examples/gain-gui
 
-* nih-plug example:
-    https://github.com/steckes/rust-audio-plugin/tree/main
-
 * clack example:
   https://github.com/Kwarf/crabhowler
 
