@@ -10,7 +10,7 @@ just run
 ```
 
 It builds shared library and generates bundled plugins for vst3 and clap.
-Plugins are built with clack framework and clap-wrapper-rs library.
+Plugins are built with clack-plugin framework and clap-wrapper-rs library.
 
 ### TODO
 
@@ -24,6 +24,8 @@ Plugins are built with clack framework and clap-wrapper-rs library.
   development of similiar plugins.
 
 * fix bug: plugin UI does not opens on first close and re-open in the DAW (Reaper).
+
+* what about presets?
  
 ### Examples:
 
