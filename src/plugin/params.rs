@@ -1,6 +1,8 @@
+use crate::plugin::audio::csd::ChannelName;
 use crate::util::atomic::AtomicValue;
 use clack_plugin::events::spaces::CoreEventSpace;
 use clack_plugin::prelude::*;
+use once_cell::sync::Lazy;
 
 pub static DEFAULT_FEEDBACK: f32 = 0.6;
 pub static DEFAULT_CUT_OFF: f32 = 1.0;
@@ -36,6 +38,18 @@ pub static PARAMS: [ParamSpec; 3] = [
         init: DEFAULT_MIX,
     },
 ];
+
+// We use special names because ChannelName is Cstring under the hood,
+// and to avoid allocation in audio performance loop we need to append termination
+// character at the end of string (channel name) to use it in FFI call without extra allocations
+// on every call.
+pub static CHANNEL_NAMES: Lazy<[ChannelName; 3]> = Lazy::new(|| {
+    [
+        ChannelName::from(FEEDBACK_NAME),
+        ChannelName::from(CUT_OFF_NAME),
+        ChannelName::from(MIX_NAME),
+    ]
+});
 
 pub struct ParamSpec {
     pub name: &'static str,

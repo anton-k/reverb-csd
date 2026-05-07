@@ -22,8 +22,9 @@ chnset 0.6, "mix"
 kfeedback chngetk "feedback"
 kcutOff chngetk "cut_off"
 kmix chngetk "mix"
-;        printks "kfeedback = %f, kcutoff = %f, kmix = %f\\n", 0.1, kfeedback, kcutOff, kmix
 printk2 kfeedback
+printk2 kcutOff
+printk2 kmix
 
 a1      vco2 0.85, 440, 10
 kfrq    port 100, 0.004, 20000

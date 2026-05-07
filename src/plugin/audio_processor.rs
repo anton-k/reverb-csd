@@ -30,7 +30,7 @@ impl<'a> ReverbAudioProcessor<'a> {
             .for_each(|(index, param)| {
                 let _ = param.on_update(|| {
                     self.csound
-                        .set_control_channel(params::PARAMS[index].name, param.get() as f64);
+                        .set_control_channel(&params::CHANNEL_NAMES[index], param.get() as f64);
                 });
             });
     }
@@ -77,9 +77,10 @@ impl<'a> PluginAudioProcessorParams for ReverbAudioProcessor<'a> {
 fn react_on_input_event(event: &UnknownEvent, csound: &mut csd::Csound) {
     if let Some(CoreEventSpace::ParamValue(event)) = event.as_core_event()
         && let Some(param_id) = event.param_id()
-        && let Some(param) = params::param_id_to_name(param_id)
+        && let Some(channel_name) = params::CHANNEL_NAMES.get(param_id.get() as usize)
     {
-        println!("Param change: {:?} {:.2?}", param, event.value());
-        csound.set_control_channel(param, event.value()).unwrap();
+        csound
+            .set_control_channel(channel_name, event.value())
+            .unwrap();
     }
 }

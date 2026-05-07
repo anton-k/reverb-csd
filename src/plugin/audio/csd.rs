@@ -1,9 +1,11 @@
 // libloading example: https://michael-f-bryan.github.io/rust-ffi-guide/dynamic_loading.html
 static REVERB_CSD_FILE: &str = include_str!("./reverb.csd");
 use core::ffi::c_void;
+use std::ffi::CString;
+use std::os::raw::c_char;
 use std::path::Path;
 use std::{
-    ffi::{c_char, c_double, c_int},
+    ffi::{c_double, c_int},
     ptr::null,
 };
 
@@ -49,6 +51,20 @@ pub struct Csound {
 
 unsafe impl Send for Csound {}
 unsafe impl Sync for Csound {}
+
+pub struct ChannelName(CString);
+
+impl ChannelName {
+    pub fn as_ptr(&self) -> *const c_char {
+        self.0.as_ptr()
+    }
+}
+
+impl From<&str> for ChannelName {
+    fn from(value: &str) -> Self {
+        ChannelName(CString::new(value).unwrap())
+    }
+}
 
 // TODO: rewrite functions to cache symbols(pointers to got functions)
 impl Csound {
@@ -154,24 +170,25 @@ impl Csound {
         .map_err(CsdError)
     }
 
-    pub fn set_control_channel(&mut self, channel_name: &str, value: f64) -> Result<i32, CsdError> {
+    pub fn set_control_channel(
+        &mut self,
+        channel_name: &ChannelName,
+        value: f64,
+    ) -> Result<i32, CsdError> {
         unsafe {
-            let res = (self.csound_set_control_channel)(
-                self.csound_ptr,
-                channel_name.as_ptr() as *const c_char,
-                value,
-            );
+            let res =
+                (self.csound_set_control_channel)(self.csound_ptr, channel_name.as_ptr(), value);
             Ok(res)
         }
         .map_err(CsdError)
     }
 
-    pub fn get_control_channel(&self, channel_name: &str) -> Result<f64, CsdError> {
+    pub fn get_control_channel(&self, channel_name: &ChannelName) -> Result<f64, CsdError> {
         unsafe {
             let err_value = 0;
             let res = (self.csound_get_control_channel)(
                 self.csound_ptr,
-                channel_name.as_ptr() as *const c_char,
+                channel_name.as_ptr(),
                 &err_value as *const i32 as *mut c_int,
             );
             Ok(res)
@@ -297,11 +314,9 @@ impl Csound {
 
     pub fn event_string(&mut self, note: &str, is_async: bool) -> CsdResult<()> {
         unsafe {
-            let _res = (self.csound_event_string)(
-                self.csound_ptr,
-                note.as_ptr() as *const c_char,
-                is_async as i32,
-            );
+            let c_string = CString::new(note).unwrap();
+            let _res =
+                (self.csound_event_string)(self.csound_ptr, c_string.as_ptr(), is_async as i32);
             Ok(())
         }
         .map_err(CsdError)
@@ -358,7 +373,7 @@ impl Csound {
         unsafe { (self.csound_perform_ksmps)(self.csound_ptr) }
     }
 
-    pub fn set_control_channel_unsafe(&mut self, channel_name: &str, value: f64) -> i32 {
+    pub fn set_control_channel_unsafe(&mut self, channel_name: &ChannelName, value: f64) -> i32 {
         unsafe {
             (self.csound_set_control_channel)(
                 self.csound_ptr,
@@ -369,12 +384,12 @@ impl Csound {
     }
 
     // ignores errors
-    pub fn get_control_channel_unsafe(&self, channel_name: &str) -> f64 {
+    pub fn get_control_channel_unsafe(&self, channel_name: &ChannelName) -> f64 {
         unsafe {
             let err_value = 0;
             (self.csound_get_control_channel)(
                 self.csound_ptr,
-                channel_name.as_ptr() as *const c_char,
+                channel_name.as_ptr(),
                 &err_value as *const i32 as *mut c_int,
             )
         }
@@ -394,11 +409,9 @@ impl Csound {
 
     pub fn event_string_unsafe(&mut self, note: &str, is_async: bool) {
         unsafe {
-            let _res = (self.csound_event_string)(
-                self.csound_ptr,
-                note.as_ptr() as *const c_char,
-                is_async as i32,
-            );
+            let c_string = CString::new(note).unwrap();
+            let _res =
+                (self.csound_event_string)(self.csound_ptr, c_string.as_ptr(), is_async as i32);
         }
     }
 }

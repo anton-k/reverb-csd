@@ -21,6 +21,7 @@ egui-baseview = { git = "https://codeberg.org/BillyDM/egui-baseview.git", branch
 egui_knob = "=0.3.10"
 crossbeam-channel = "0.5.15"
 libloading = "0.9.0"
+once_cell = "1.21.4"
 # tokio-bichannel = "1.0.2"
 # tokio = { version = "1.52.1", features = ["full", "sync"] }
 
