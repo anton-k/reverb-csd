@@ -15,7 +15,7 @@ static KNOB_SIZE: f32 = 85.0;
 static KNOB_DX: f32 = 30.0;
 static KNOB_LABEL_DY: f32 = 10.0;
 static KNOB_LABEL_SIZE: f32 = 20.0;
-static LABEL_FONT_SIZE: f32 = 17.0;
+static LABEL_FONT_SIZE: f32 = 18.0;
 
 struct AppState {
     shared_params: Arc<ReverbParamsShared>,

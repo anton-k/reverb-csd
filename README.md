@@ -18,18 +18,13 @@ Plugins are built with clack framework and clap-wrapper-rs library.
 
 * fine-tune the UI
 
-* make VST build work again (somehow clap-wrapper does not work with Csound.)
-  I guess it happens because of dynamic linking. Post an issue and try to investigate
-  static linking for Csound.
-  
-#### Static linking for csound (cure VST3 build)
+* move CSD-bindings to separate repo.
 
-We can produce static linking (google/deepseek around).
-But there is a problem that to be completley static it has to include recursive sub dependencies.
-There is a script to do it for Mac on Csound repo. I wonder if it works or can be adapted for
-linux and windows.
+* implement a simple csd_clack_bridge repo to simplify
+  development of similiar plugins.
 
-
+* fix bug: plugin UI does not opens on first close and re-open in the DAW (Reaper).
+ 
 ### Examples:
 
 * clack with gui, official clack gain FX example:
