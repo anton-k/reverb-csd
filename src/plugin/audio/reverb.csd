@@ -1,18 +1,30 @@
 <CsoundSynthesizer>
 <CsOptions>
-; Select audio/midi flags here according to platform
-; Audio out   Audio in    No messages
--odac           -iadc     -d     ;;;RT audio I/O
-; For Non-realtime ouput leave only the line below:
-; -o reverbsc.wav -W ;;; for file output any platform
+
 </CsOptions>
 <CsInstruments>
-sr      =  48000
+sr      =  44100
 ksmps   =  32
 nchnls  =  2
 0dbfs   =  1
 
+chn_k "feedback", 1, 2, 0.6, 0, 1
+chnset 0.6, "feedback"
+
+chn_k "cut_off", 1, 2, 0.6, 0, 1
+chnset 0.6, "cut_off"
+
+chn_k "mix", 1, 2, 0.6, 0, 1
+chnset 0.6, "mix"
+
+
         instr 1
+kfeedback chngetk "feedback"
+kcutOff chngetk "cut_off"
+kmix chngetk "mix"
+;        printks "kfeedback = %f, kcutoff = %f, kmix = %f\\n", 0.1, kfeedback, kcutOff, kmix
+printk2 kfeedback
+
 a1      vco2 0.85, 440, 10
 kfrq    port 100, 0.004, 20000
 a1      butterlp a1, kfrq

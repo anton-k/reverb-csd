@@ -44,6 +44,11 @@ linux and windows.
 * csound audio processing for VST example in cpp + juce:
   https://github.com/gogins/csound-vst3/blob/main/CsoundVST3/Source/PluginProcessor.cpp#L432b
 
+* CLAP plugin tutorial:
+  https://nakst.gitlab.io/tutorial/clap-part-1.html
+
+### SPSC Queues (for Csound to Plugin audio communication)
+
 * fast single producer single consumer queue
 https://github.com/wryzxec/PikaQ
 
@@ -58,6 +63,7 @@ Rust fast SPSC queues:
 * fq - https://crates.io/crates/fq
 * nexus::queue - https://github.com/Abso1ut3Zer0/nexus
 * spsc - https://github.com/1rishuraj/low-latency-rust/tree/main/spsc
+* heapless:spsc
 
 CPP queues:
 

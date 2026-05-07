@@ -1,15 +1,50 @@
 use crate::plugin::audio::csd;
 use crate::plugin::main_thread::ReverbMainThread;
-use crate::plugin::params::ReverbParamsShared;
+use crate::plugin::params;
 use crate::plugin::shared::ReverbShared;
 use clack_extensions::params::PluginAudioProcessorParams;
 use clack_plugin::events::spaces::CoreEventSpace;
 use clack_plugin::prelude::*;
-use csound::Csound;
+// use csound::Csound;
 
 pub struct ReverbAudioProcessor<'a> {
     shared: &'a ReverbShared,
-    csound: Csound,
+    csound: csd::Csound,
+}
+
+impl<'a> ReverbAudioProcessor<'a> {
+    pub fn handle_events(&mut self, events: &Events) {
+        for event_batch in events.input.batch() {
+            for event in event_batch.events() {
+                react_on_input_event(event, &mut self.csound);
+            }
+        }
+    }
+
+    pub fn update_csound_params(&mut self) {
+        self.shared.params.on_feedback_updated(|| {
+            self.csound
+                .set_control_channel(
+                    params::FEEDBACK_NAME,
+                    self.shared.params.get_feedback() as f64,
+                )
+                .unwrap();
+        });
+        self.shared.params.on_cut_off_updated(|| {
+            self.csound
+                .set_control_channel(
+                    params::CUT_OFF_NAME,
+                    self.shared.params.get_cut_off() as f64,
+                )
+                .unwrap();
+        });
+
+        self.shared.params.on_mix_updated(|| {
+            self.csound
+                .set_control_channel(params::MIX_NAME, self.shared.params.get_mix() as f64)
+                .unwrap();
+        });
+    }
 }
 
 impl<'a> PluginAudioProcessor<'a, ReverbShared, ReverbMainThread<'a>> for ReverbAudioProcessor<'a> {
@@ -29,6 +64,11 @@ impl<'a> PluginAudioProcessor<'a, ReverbShared, ReverbMainThread<'a>> for Reverb
         audio: Audio,
         events: Events,
     ) -> Result<ProcessStatus, PluginError> {
+        self.handle_events(&events);
+        self.update_csound_params();
+
+        let _ = self.csound.perform_ksmps().unwrap();
+
         Ok(ProcessStatus::ContinueIfNotQuiet)
     }
 }
@@ -37,31 +77,20 @@ impl<'a> PluginAudioProcessorParams for ReverbAudioProcessor<'a> {
     fn flush(
         &mut self,
         input_parameter_changes: &InputEvents,
-        output_parameter_changes: &mut OutputEvents,
+        _output_parameter_changes: &mut OutputEvents,
     ) {
-        println!("HI FLUSH");
         for event in input_parameter_changes {
-            if let Some(CoreEventSpace::ParamValue(event)) = event.as_core_event()
-                && let Some(param_id) = event.param_id()
-                && let Some(param) = param_id_to_name(param_id)
-            {
-                println!("Param change: {:?} {:.2?}", param, event.value());
-                self.csound
-                    .set_control_channel(param, event.value())
-                    .unwrap();
-            }
+            react_on_input_event(event, &mut self.csound);
         }
     }
 }
 
-fn param_id_to_name(id: ClapId) -> Option<&'static str> {
-    if id == ReverbParamsShared::FEEDBACK_ID {
-        Some("feedback")
-    } else if id == ReverbParamsShared::CUT_OFF_ID {
-        Some("cut_off")
-    } else if id == ReverbParamsShared::MIX_ID {
-        Some("mix")
-    } else {
-        None
+fn react_on_input_event(event: &UnknownEvent, csound: &mut csd::Csound) {
+    if let Some(CoreEventSpace::ParamValue(event)) = event.as_core_event()
+        && let Some(param_id) = event.param_id()
+        && let Some(param) = params::param_id_to_name(param_id)
+    {
+        println!("Param change: {:?} {:.2?}", param, event.value());
+        csound.set_control_channel(param, event.value()).unwrap();
     }
 }

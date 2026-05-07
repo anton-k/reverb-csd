@@ -20,6 +20,7 @@ baseview = { git = "https://github.com/RustAudio/baseview.git", rev = "237d323c7
 egui-baseview = { git = "https://codeberg.org/BillyDM/egui-baseview.git", branch = "egui_33" }
 egui_knob = "=0.3.10"
 crossbeam-channel = "0.5.15"
+libloading = "0.9.0"
 # tokio-bichannel = "1.0.2"
 # tokio = { version = "1.52.1", features = ["full", "sync"] }
 

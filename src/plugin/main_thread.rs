@@ -1,4 +1,5 @@
 use crate::plugin::gui::ReverbGui;
+use crate::plugin::params;
 use crate::plugin::params::*;
 use crate::plugin::shared::ReverbShared;
 use clack_extensions::gui::{GuiApiType, Window};
@@ -73,31 +74,27 @@ impl PluginMainThreadParams for ReverbMainThread<'_> {
     fn get_info(&mut self, param_index: u32, info: &mut ParamInfoWriter) {
         if param_index == 0 {
             info.set(&unit_param_info(
-                ReverbParamsShared::FEEDBACK_ID,
+                params::FEEDBACK_ID,
                 b"Feedback",
                 DEFAULT_FEEDBACK,
             ));
         } else if param_index == 1 {
             info.set(&unit_param_info(
-                ReverbParamsShared::CUT_OFF_ID,
+                params::CUT_OFF_ID,
                 b"Cut off",
                 DEFAULT_CUT_OFF,
             ));
         } else if param_index == 2 {
-            info.set(&unit_param_info(
-                ReverbParamsShared::MIX_ID,
-                b"Mix",
-                DEFAULT_MIX,
-            ));
+            info.set(&unit_param_info(params::MIX_ID, b"Mix", DEFAULT_MIX));
         }
     }
 
     fn get_value(&mut self, param_id: ClapId) -> Option<f64> {
-        if param_id == ReverbParamsShared::FEEDBACK_ID {
+        if param_id == params::FEEDBACK_ID {
             Some(self.params.get_feedback() as f64)
-        } else if param_id == ReverbParamsShared::CUT_OFF_ID {
+        } else if param_id == params::CUT_OFF_ID {
             Some(self.params.get_cut_off() as f64)
-        } else if param_id == ReverbParamsShared::MIX_ID {
+        } else if param_id == params::MIX_ID {
             Some(self.params.get_mix() as f64)
         } else {
             None
@@ -125,7 +122,7 @@ impl PluginMainThreadParams for ReverbMainThread<'_> {
     fn flush(
         &mut self,
         input_parameter_changes: &InputEvents,
-        _output_parameter_changes: &mut OutputEvents,
+        output_parameter_changes: &mut OutputEvents,
     ) {
         for event in input_parameter_changes {
             self.params.handle_event(event);

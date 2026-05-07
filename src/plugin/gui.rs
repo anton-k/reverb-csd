@@ -61,7 +61,7 @@ impl ReverbGui {
 
                 egui::CentralPanel::default().show(egui_ctx, |ui| {
                     ui.vertical_centered(|ui| {
-                        ui.heading(RichText::new("Reverb Csd").color(Color32::WHITE));
+                        ui.heading(RichText::new("Reverb Csd").color(Color32::LIGHT_BLUE));
                     });
                     let mut feedback_value = state.local_params.get_feedback();
                     let mut cut_off_value = state.local_params.get_cut_off();
@@ -153,7 +153,7 @@ fn set_label(ui: &mut Ui, rect: Rect, name: &str) {
         Label::new(
             RichText::new(name)
                 .size(LABEL_FONT_SIZE)
-                .color(Color32::WHITE),
+                .color(Color32::LIGHT_BLUE),
         ),
     );
 }
