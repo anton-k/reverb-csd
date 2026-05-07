@@ -77,7 +77,7 @@ impl<'a> PluginAudioProcessorParams for ReverbAudioProcessor<'a> {
 fn react_on_input_event(event: &UnknownEvent, csound: &mut csd::Csound) {
     if let Some(CoreEventSpace::ParamValue(event)) = event.as_core_event()
         && let Some(param_id) = event.param_id()
-        && let Some(channel_name) = params::CHANNEL_NAMES.get(param_id.get() as usize)
+        && let Some(channel_name) = params::param_id_to_name(param_id)
     {
         csound
             .set_control_channel(channel_name, event.value())

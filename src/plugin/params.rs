@@ -4,38 +4,21 @@ use clack_plugin::events::spaces::CoreEventSpace;
 use clack_plugin::prelude::*;
 use once_cell::sync::Lazy;
 
-pub static DEFAULT_FEEDBACK: f32 = 0.6;
-pub static DEFAULT_CUT_OFF: f32 = 1.0;
-pub static DEFAULT_MIX: f32 = 1.0;
-pub const FEEDBACK_ID: ClapId = ClapId::new(1);
-pub const CUT_OFF_ID: ClapId = ClapId::new(2);
-pub const MIX_ID: ClapId = ClapId::new(3);
-
-pub const FEEDBACK_NAME: &str = "feedback";
-pub const CUT_OFF_NAME: &str = "cut_off";
-pub const MIX_NAME: &str = "mix";
-pub const FEEDBACK_UI_NAME: &str = "size";
-pub const CUT_OFF_UI_NAME: &str = "filter";
-pub const MIX_UI_NAME: &str = "mix";
-
 pub static PARAMS: [ParamSpec; 3] = [
     ParamSpec {
-        name: FEEDBACK_NAME,
-        ui_name: FEEDBACK_UI_NAME,
-        id: FEEDBACK_ID,
-        init: DEFAULT_FEEDBACK,
+        ui_name: "size",
+        id: ClapId::new(0),
+        init: 0.6,
     },
     ParamSpec {
-        name: CUT_OFF_NAME,
-        ui_name: CUT_OFF_UI_NAME,
-        id: CUT_OFF_ID,
-        init: DEFAULT_CUT_OFF,
+        ui_name: "filter",
+        id: ClapId::new(1),
+        init: 1.0,
     },
     ParamSpec {
-        name: MIX_NAME,
-        ui_name: MIX_UI_NAME,
-        id: MIX_ID,
-        init: DEFAULT_MIX,
+        ui_name: "mix",
+        id: ClapId::new(2),
+        init: 1.0,
     },
 ];
 
@@ -45,14 +28,13 @@ pub static PARAMS: [ParamSpec; 3] = [
 // on every call.
 pub static CHANNEL_NAMES: Lazy<[ChannelName; 3]> = Lazy::new(|| {
     [
-        ChannelName::from(FEEDBACK_NAME),
-        ChannelName::from(CUT_OFF_NAME),
-        ChannelName::from(MIX_NAME),
+        ChannelName::from("feedback"),
+        ChannelName::from("cut_off"),
+        ChannelName::from("mix"),
     ]
 });
 
 pub struct ParamSpec {
-    pub name: &'static str,
     pub ui_name: &'static str,
     pub id: ClapId,
     pub init: f32,
@@ -99,7 +81,7 @@ impl Param {
 
 impl ReverbParamsShared {
     pub fn is_valid_param(&self, param_id: ClapId) -> bool {
-        param_id.get() >= 0 && param_id.get() < self.params.len() as u32
+        param_id.get() < self.params.len() as u32
     }
 
     pub fn push(&mut self, param: Param) {
@@ -201,6 +183,6 @@ impl ReverbParamsLocal {
     }
 }
 
-pub fn param_id_to_name(id: ClapId) -> Option<&'static str> {
-    PARAMS.get(id.get() as usize).map(|p| p.name)
+pub fn param_id_to_name<'a>(id: ClapId) -> Option<&'a ChannelName> {
+    CHANNEL_NAMES.get(id.get() as usize)
 }
