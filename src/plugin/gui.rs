@@ -1,4 +1,4 @@
-use crate::plugin::params::{ReverbParamsLocal, ReverbParamsShared};
+use crate::plugin::params::{self, ReverbParamsLocal, ReverbParamsShared};
 use crate::plugin::shared::ReverbShared;
 use baseview::{Size, WindowHandle, WindowOpenOptions, WindowScalePolicy};
 use clack_extensions::gui::*;
@@ -25,7 +25,7 @@ struct AppState {
 impl AppState {
     pub fn new(shared_params: &Arc<ReverbParamsShared>) -> Self {
         Self {
-            local_params: ReverbParamsLocal::new(&shared_params),
+            local_params: ReverbParamsLocal::new(shared_params),
             shared_params: Arc::clone(shared_params),
         }
     }
@@ -63,9 +63,6 @@ impl ReverbGui {
                     ui.vertical_centered(|ui| {
                         ui.heading(RichText::new("Reverb Csd").color(Color32::LIGHT_BLUE));
                     });
-                    let mut feedback_value = state.local_params.get_feedback();
-                    let mut cut_off_value = state.local_params.get_cut_off();
-                    let mut mix_value = state.local_params.get_mix();
 
                     let rect_feedback = Rect {
                         min: Pos2::new(KNOB_X, KNOB_Y),
@@ -98,31 +95,19 @@ impl ReverbGui {
                         max: Pos2::new(x_mix + KNOB_SIZE, label_y + KNOB_LABEL_SIZE),
                     };
 
-                    let knob_feedback = get_knob(&mut feedback_value);
-                    let feedback_ui = ui.put(rect_feedback, knob_feedback);
-                    if feedback_ui.changed() {
-                        state.local_params.set_feedback(feedback_value);
-                        state
-                            .local_params
-                            .push_feedback_updates(&state.shared_params);
+                    let ui_rects = [rect_feedback, rect_cut_off, rect_mix];
+                    let label_rects = [rect_feedback_label, rect_cut_off_label, rect_mix_label];
+                    let mut current_values = state.local_params.params;
+
+                    for (index, param_spec) in params::PARAMS.iter().enumerate() {
+                        let knob = get_knob(&mut current_values[index]);
+                        let control_ui = ui.put(ui_rects[index], knob);
+                        if control_ui.changed() {
+                            state.local_params.set(index, current_values[index]);
+                            state.local_params.push_updates(index, &state.shared_params);
+                        }
+                        set_label(ui, label_rects[index], param_spec.ui_name);
                     }
-                    set_label(ui, rect_feedback_label, "size");
-                    let knob_cut_off = get_knob(&mut cut_off_value);
-                    let cut_off_ui = ui.put(rect_cut_off, knob_cut_off);
-                    if cut_off_ui.changed() {
-                        state.local_params.set_cut_off(cut_off_value);
-                        state
-                            .local_params
-                            .push_cut_off_updates(&state.shared_params);
-                    }
-                    set_label(ui, rect_cut_off_label, "filter");
-                    let knob_mix = get_knob(&mut mix_value);
-                    let mix_ui = ui.put(rect_mix, knob_mix);
-                    if mix_ui.changed() {
-                        state.local_params.set_mix(mix_value);
-                        state.local_params.push_mix_updates(&state.shared_params);
-                    }
-                    set_label(ui, rect_mix_label, "mix");
                 });
             },
         );

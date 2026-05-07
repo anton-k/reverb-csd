@@ -31,6 +31,7 @@ pub struct Csound {
 unsafe impl Send for Csound {}
 unsafe impl Sync for Csound {}
 
+// TODO: rewrite functions to cache symbols(pointers to got functions)
 impl Csound {
     pub fn new(filename: &Path) -> CsdResult<Csound> {
         unsafe {

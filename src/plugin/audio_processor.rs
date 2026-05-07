@@ -22,28 +22,17 @@ impl<'a> ReverbAudioProcessor<'a> {
     }
 
     pub fn update_csound_params(&mut self) {
-        self.shared.params.on_feedback_updated(|| {
-            self.csound
-                .set_control_channel(
-                    params::FEEDBACK_NAME,
-                    self.shared.params.get_feedback() as f64,
-                )
-                .unwrap();
-        });
-        self.shared.params.on_cut_off_updated(|| {
-            self.csound
-                .set_control_channel(
-                    params::CUT_OFF_NAME,
-                    self.shared.params.get_cut_off() as f64,
-                )
-                .unwrap();
-        });
-
-        self.shared.params.on_mix_updated(|| {
-            self.csound
-                .set_control_channel(params::MIX_NAME, self.shared.params.get_mix() as f64)
-                .unwrap();
-        });
+        self.shared
+            .params
+            .params
+            .iter()
+            .enumerate()
+            .for_each(|(index, param)| {
+                let _ = param.on_update(|| {
+                    self.csound
+                        .set_control_channel(params::PARAMS[index].name, param.get() as f64);
+                });
+            });
     }
 }
 
@@ -60,8 +49,8 @@ impl<'a> PluginAudioProcessor<'a, ReverbShared, ReverbMainThread<'a>> for Reverb
 
     fn process(
         &mut self,
-        process: Process,
-        audio: Audio,
+        _process: Process,
+        _audio: Audio,
         events: Events,
     ) -> Result<ProcessStatus, PluginError> {
         self.handle_events(&events);

@@ -38,11 +38,11 @@ impl PluginStateImpl for ReverbMainThread<'_> {
     fn load(&mut self, input: &mut InputStream) -> Result<(), PluginError> {
         let mut buf: Vec<u8> = Vec::new();
         input.read_exact(&mut buf)?;
-        let params = ReverbParamsLocal::deserialize(&buf);
+        let local = ReverbParamsLocal::deserialize(&buf);
 
-        self.shared.params.set_feedback(params.get_feedback());
-        self.shared.params.set_cut_off(params.get_cut_off());
-        self.shared.params.set_mix(params.get_mix());
+        for (index, param) in local.params.iter().enumerate() {
+            self.shared.params.set(index, *param);
+        }
         Ok(())
     }
 }
@@ -72,33 +72,18 @@ impl PluginMainThreadParams for ReverbMainThread<'_> {
     }
 
     fn get_info(&mut self, param_index: u32, info: &mut ParamInfoWriter) {
-        if param_index == 0 {
+        let index = param_index as usize;
+        if index < self.params.params.len() {
             info.set(&unit_param_info(
-                params::FEEDBACK_ID,
-                b"Feedback",
-                DEFAULT_FEEDBACK,
+                params::PARAMS[index].id,
+                params::PARAMS[index].ui_name.as_bytes(),
+                params::PARAMS[index].init,
             ));
-        } else if param_index == 1 {
-            info.set(&unit_param_info(
-                params::CUT_OFF_ID,
-                b"Cut off",
-                DEFAULT_CUT_OFF,
-            ));
-        } else if param_index == 2 {
-            info.set(&unit_param_info(params::MIX_ID, b"Mix", DEFAULT_MIX));
         }
     }
 
     fn get_value(&mut self, param_id: ClapId) -> Option<f64> {
-        if param_id == params::FEEDBACK_ID {
-            Some(self.params.get_feedback() as f64)
-        } else if param_id == params::CUT_OFF_ID {
-            Some(self.params.get_cut_off() as f64)
-        } else if param_id == params::MIX_ID {
-            Some(self.params.get_mix() as f64)
-        } else {
-            None
-        }
+        self.params.get_by_id(param_id).map(|x| x as f64)
     }
 
     fn value_to_text(
@@ -111,7 +96,7 @@ impl PluginMainThreadParams for ReverbMainThread<'_> {
     }
 
     fn text_to_value(&mut self, param_id: ClapId, text: &std::ffi::CStr) -> Option<f64> {
-        if ReverbParamsShared::is_valid_param(param_id) {
+        if self.params.is_valid_param(param_id) {
             let text = text.to_str().ok()?;
             text.trim().parse().ok()
         } else {
@@ -122,7 +107,7 @@ impl PluginMainThreadParams for ReverbMainThread<'_> {
     fn flush(
         &mut self,
         input_parameter_changes: &InputEvents,
-        output_parameter_changes: &mut OutputEvents,
+        _output_parameter_changes: &mut OutputEvents,
     ) {
         for event in input_parameter_changes {
             self.params.handle_event(event);
