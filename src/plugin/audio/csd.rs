@@ -43,6 +43,8 @@ pub struct Csound {
     csound_get_0dbfs: unsafe extern "C" fn(*const CsoundPtr) -> f64,
     csound_destroy: unsafe extern "C" fn(*mut CsoundPtr) -> c_void,
     csound_get_current_time_samples: unsafe extern "C" fn(*const CsoundPtr) -> i64,
+    csound_event: unsafe extern "C" fn(*mut CsoundPtr, i32, *const f64, i32, i32) -> c_void,
+    csound_event_string: unsafe extern "C" fn(*mut CsoundPtr, *const c_char, i32) -> c_void,
 }
 
 unsafe impl Send for Csound {}
@@ -75,6 +77,8 @@ impl Csound {
             let csound_get_kr = *lib.get(b"csoundGetKr")?;
             let csound_get_0dbfs = *lib.get(b"csoundGet0dBFS")?;
             let csound_get_current_time_samples = *lib.get(b"csoundGetCurrentTimeSamples")?;
+            let csound_event = *lib.get(b"csoundEvent")?;
+            let csound_event_string = *lib.get(b"csoundEventString")?;
             Ok(Self {
                 lib,
                 csound_ptr,
@@ -94,6 +98,8 @@ impl Csound {
                 csound_get_kr,
                 csound_get_current_time_samples,
                 csound_get_0dbfs,
+                csound_event,
+                csound_event_string,
             })
         }
         .map_err(CsdError)
@@ -270,6 +276,37 @@ impl Csound {
         .map_err(CsdError)
     }
 
+    pub fn event(
+        &mut self,
+        event_type: EventType,
+        params: &[f64],
+        is_async: bool,
+    ) -> CsdResult<()> {
+        unsafe {
+            let _res = (self.csound_event)(
+                self.csound_ptr,
+                event_type as i32,
+                params.as_ptr(),
+                params.len() as i32,
+                is_async as i32,
+            );
+            Ok(())
+        }
+        .map_err(CsdError)
+    }
+
+    pub fn event_string(&mut self, note: &str, is_async: bool) -> CsdResult<()> {
+        unsafe {
+            let _res = (self.csound_event_string)(
+                self.csound_ptr,
+                note.as_ptr() as *const c_char,
+                is_async as i32,
+            );
+            Ok(())
+        }
+        .map_err(CsdError)
+    }
+
     // unsafe and fast variants with no result/error wrappers
 
     pub fn get_ksmps_unsafe(&self) -> u32 {
@@ -342,6 +379,33 @@ impl Csound {
             )
         }
     }
+
+    pub fn event_unsafe(&mut self, event_type: EventType, params: &[f64], is_async: bool) {
+        unsafe {
+            let _res = (self.csound_event)(
+                self.csound_ptr,
+                event_type as i32,
+                params.as_ptr(),
+                params.len() as i32,
+                is_async as i32,
+            );
+        }
+    }
+
+    pub fn event_string_unsafe(&mut self, note: &str, is_async: bool) {
+        unsafe {
+            let _res = (self.csound_event_string)(
+                self.csound_ptr,
+                note.as_ptr() as *const c_char,
+                is_async as i32,
+            );
+        }
+    }
+}
+enum EventType {
+    Instrument = 0,
+    FunctionTable = 1,
+    End = 2,
 }
 
 impl Drop for Csound {
